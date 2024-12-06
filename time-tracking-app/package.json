@@ -4,6 +4,7 @@
   "main": "server.js",
   "bin": "server.js",
   "scripts": {
+    "dev": "nodemon server.js",
     "start": "node server.js",
     "make-exe": "pkg . --targets node*-win-x64 --output time-tracking-app.exe"
   },
@@ -16,7 +17,8 @@
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.21.1",
-    "mongoose": "^8.8.2"
+    "mongoose": "^8.8.2",
+    "nodemon": "^3.1.7"
   },
   "devDependencies": {
     "pkg": "^5.8.1"
