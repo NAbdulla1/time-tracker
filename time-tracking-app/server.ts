@@ -1,36 +1,24 @@
-require('dotenv').config();
-const express = require('express');
-const mongoose = require('mongoose');
-const bodyParser = require('body-parser');
-const cors = require('cors');
-const path = require('path');
-const { getEntriesGroupedByDate, getWeekStartDate, getNextWeekStartDate } = require('./utils');
+import * as dotenv from 'dotenv';
+dotenv.config();
+import express, { Application, Request, Response } from 'express';
+import mongoose, { Document } from 'mongoose';
+import bodyParser from 'body-parser';
+import cors from 'cors';
+import path from 'path';
+import { getEntriesGroupedByDate, getWeekStartDate, getNextWeekStartDate } from './utils';
+import TimeEntry from './db/models/TimeEntry';
 
-const app = express();
+const app: Application = express();
 app.use(cors());
 app.use(bodyParser.json());
 
-// Connect to MongoDB
-mongoose.connect(process.env.DB_URL, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-})
+mongoose.connect(process.env.DB_URL || '')
     .then(() => console.log('Connected to MongoDB'))
-    .catch(err => console.error('MongoDB connection error:', err));
+    .catch((err: Error) => console.error('MongoDB connection error:', err));
 
-// Define a schema and model for time entries
-const timeEntrySchema = new mongoose.Schema({
-    clockIn: { type: Date, required: true },
-    clockOut: { type: Date },
-});
-
-const TimeEntry = mongoose.model('TimeEntry', timeEntrySchema);
-
-// Serve the static files from the Vue.js build folder
 app.use(express.static(path.join(__dirname, 'frontend')));
 
-// Route to clock in
-app.post('/api/clock-in', async (req, res) => {
+app.post('/api/clock-in', async (req: Request, res: Response) => {
     try {
         const newEntry = new TimeEntry({ clockIn: new Date() });
         await newEntry.save();
@@ -40,8 +28,7 @@ app.post('/api/clock-in', async (req, res) => {
     }
 });
 
-// Route to clock out
-app.post('/api/clock-out', async (req, res) => {
+app.post('/api/clock-out', async (req: Request, res: Response) => {
     try {
         const entry = await TimeEntry.findOne({ clockOut: { $exists: false } }).sort({ clockIn: -1 });
         if (entry) {
@@ -56,41 +43,25 @@ app.post('/api/clock-out', async (req, res) => {
     }
 });
 
-// Route to check if the user is currently clocked in
-app.get('/api/is-clocked-in', async (req, res) => {
+app.get('/api/is-clocked-in', async (req: Request, res: Response) => {
     try {
-        // Find the latest entry where clockOut is missing (indicating the user is clocked in)
         const entry = await TimeEntry.findOne({ clockOut: { $exists: false } }).sort({ clockIn: -1 });
-
-        if (entry) {
-            res.status(200).send({ isClockedIn: true });
-        } else {
-            res.status(200).send({ isClockedIn: false });
-        }
+        res.status(200).send({ isClockedIn: !!entry });
     } catch (error) {
         res.status(500).send({ error: 'Error checking clock-in status' });
     }
 });
 
-// Route to get the most recent clock-in entry
-app.get('/api/last-clock-in', async (req, res) => {
+app.get('/api/last-clock-in', async (req: Request, res: Response) => {
     try {
         const entry = await TimeEntry.findOne({ clockOut: { $exists: false } }).sort({ clockIn: -1 });
-
-        if (entry) {
-            // Send the clockIn time to the frontend
-            res.status(200).send({ clockInTime: entry.clockIn });
-        } else {
-            res.status(200).send({ clockInTime: null }); // No active clock-in session
-        }
+        res.status(200).send({ clockInTime: entry ? entry.clockIn : null });
     } catch (error) {
         res.status(500).send({ error: 'Error retrieving last clock-in time' });
     }
 });
 
-
-// Route to get today's clock-in durations
-app.get('/api/today', async (req, res) => {
+app.get('/api/today', async (req: Request, res: Response) => {
     try {
         const today = new Date();
         const startOfDay = new Date(today.setHours(0, 0, 0, 0));
@@ -102,34 +73,31 @@ app.get('/api/today', async (req, res) => {
 
         const totalDuration = entries.reduce((total, entry) => {
             if (entry.clockOut) {
-                return total + (entry.clockOut - entry.clockIn);
+                return total + (entry.clockOut.getTime() - entry.clockIn.getTime());
             }
             return total;
         }, 0);
 
         res.status(200).send({
             entries,
-            totalDuration: totalDuration / 1000, // Duration in seconds
+            totalDuration: totalDuration / 1000,
         });
     } catch (error) {
-        res.status(500).send({ error: 'Error retrieving today\'s entries' });
+        res.status(500).send({ error: "Error retrieving today's entries" });
     }
 });
 
-// Route to get previous days' clock-in durations
-app.get('/api/previous', async (req, res) => {
+app.get('/api/previous', async (req: Request, res: Response) => {
     try {
         const entries = await TimeEntry.find({ clockOut: { $exists: true } }).sort({ clockIn: -1 });
-
         const entriesGroupedByDate = getEntriesGroupedByDate(entries);
-
         res.status(200).send(Object.values(entriesGroupedByDate));
     } catch (error) {
         res.status(500).send({ error: 'Error retrieving previous entries' });
     }
 });
 
-app.get('/api/current-week', async (req, res) => {
+app.get('/api/current-week', async (req: Request, res: Response) => {
     try {
         const now = new Date();
         const firstDay = getWeekStartDate(now);
@@ -141,20 +109,18 @@ app.get('/api/current-week', async (req, res) => {
         });
 
         const entriesGroupedByDate = getEntriesGroupedByDate(entries);
-
         res.status(200).send(Object.values(entriesGroupedByDate));
     } catch (error) {
         res.status(500).send({ error: 'Error retrieving current week entries' });
     }
 });
 
-// Serve the index.html for any other routes (for Vue.js frontend)
-app.get('*', (req, res) => {
+app.get('*', (req: Request, res: Response) => {
     res.sendFile(path.join(__dirname, 'frontend', 'index.html'));
 });
 
-// Start the server
 const port = process.env.PORT || 5050;
 app.listen(port, () => {
     console.log(`Server running on port ${port}`);
 });
+
