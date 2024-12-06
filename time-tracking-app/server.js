@@ -4,6 +4,7 @@ const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const path = require('path');
+const { getEntriesGroupedByDate, getWeekStartDate, getNextWeekStartDate } = require('./utils');
 
 const app = express();
 app.use(cors());
@@ -120,18 +121,7 @@ app.get('/api/previous', async (req, res) => {
     try {
         const entries = await TimeEntry.find({ clockOut: { $exists: true } }).sort({ clockIn: -1 });
 
-        const entriesGroupedByDate = entries.reduce((acc, entry) => {
-            const date = entry.clockIn.toISOString().split('T')[0]; // Extract the date part
-            const duration = (entry.clockOut - entry.clockIn) / 1000; // Duration in seconds
-
-            if (!acc[date]) {
-                acc[date] = { date, totalDuration: 0, entries: [] };
-            }
-
-            acc[date].totalDuration += duration;
-            acc[date].entries.push(entry);
-            return acc;
-        }, {});
+        const entriesGroupedByDate = getEntriesGroupedByDate(entries);
 
         res.status(200).send(Object.values(entriesGroupedByDate));
     } catch (error) {
@@ -139,9 +129,28 @@ app.get('/api/previous', async (req, res) => {
     }
 });
 
+app.get('/api/current-week', async (req, res) => {
+    try {
+        const now = new Date();
+        const firstDay = getWeekStartDate(now);
+        const nextWeeksFirstDay = getNextWeekStartDate(now);
+
+        const entries = await TimeEntry.find({
+            clockIn: { $gte: firstDay },
+            clockOut: { $lt: nextWeeksFirstDay },
+        });
+
+        const entriesGroupedByDate = getEntriesGroupedByDate(entries);
+
+        res.status(200).send(Object.values(entriesGroupedByDate));
+    } catch (error) {
+        res.status(500).send({ error: 'Error retrieving current week entries' });
+    }
+});
+
 // Serve the index.html for any other routes (for Vue.js frontend)
 app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'frontend', 'index.html'));
+    res.sendFile(path.join(__dirname, 'frontend', 'index.html'));
 });
 
 // Start the server
