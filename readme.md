@@ -1,0 +1,6 @@
+ - cd into time-tracking-frontend
+ - npm install
+ - npm run build
+ - cd into time-tracking-app
+ - npm install
+ - npm run make-exe
