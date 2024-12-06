@@ -8,7 +8,7 @@
 
     <h3>Today's Total Time: {{ formattedTotalTime }}</h3>
     <div style="overflow-x: auto;">
-      <table class="todays-table">
+      <table class="data-table">
         <thead>
           <tr>
             <th>SL</th>
@@ -25,20 +25,17 @@
         </tbody>
       </table>
     </div>
-
-    <h3>Previous Days</h3>
-    <div v-for="day in previousDays" :key="day.date">
-      <ul style="text-align: left;">
-        <li>{{ day.date }} - Total Time: {{ formatTime(day.totalDuration) }}</li>
-      </ul>
-    </div>
+    <Week />
   </div>
 </template>
 
 <script>
 import axios from 'axios';
+import { formatTime } from '../utils';
+import Week from './Week.vue';
 
 export default {
+  components: { Week },
   data() {
     return {
       clockedIn: false,
@@ -52,12 +49,12 @@ export default {
   computed: {
     // Formatted elapsed time in HH:MM:SS
     formattedElapsedTime() {
-      return this.formatTime(this.elapsedTime);
+      return formatTime(this.elapsedTime);
     },
     // Formatted total time for today in HH:MM:SS
     formattedTotalTime() {
-      return this.formatTime(this.totalTime + this.elapsedTime);
-    },
+      return formatTime(this.totalTime + this.elapsedTime);
+    }
   },
   methods: {
     displayTime(dt) {
@@ -113,19 +110,6 @@ export default {
         this.elapsedTime = elapsed;
       }, 1000); // Update every second
     },
-    // Format the time in HH:MM:SS
-    formatTime(seconds) {
-      const hours = Math.floor(seconds / 3600);
-      const minutes = Math.floor((seconds % 3600) / 60);
-      const remainingSeconds = seconds % 60;
-
-      // Format as HH:MM:SS
-      return `${this.padZero(hours)}:${this.padZero(minutes)}:${this.padZero(remainingSeconds.toFixed(3))}`;
-    },
-    // Helper function to add leading zero if the number is less than 10
-    padZero(number) {
-      return number < 10 ? '0' + number : number;
-    }
   },
   created() {
     this.fetchTodayData();
@@ -142,18 +126,7 @@ button {
   font-size: 16px;
 }
 
-.todays-table {
-  max-width: 600px;
-  border: 1px solid black;
-  border-collapse: collapse;
+.data-table {
   margin: 0 auto;
-}
-
-.todays-table td,
-.todays-table th {
-  padding-left: 5px;
-  padding-right: 5px;
-  text-align: left;
-  border: 1px solid black;
 }
 </style>
