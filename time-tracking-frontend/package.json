@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build --outDir=../time-tracking-app/dist --emptyOutDir",
+    "build": "vite build --outDir=../time-tracking-app/frontend --emptyOutDir",
     "preview": "vite preview"
   },
   "dependencies": {

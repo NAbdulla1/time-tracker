@@ -26,7 +26,7 @@ const timeEntrySchema = new mongoose.Schema({
 const TimeEntry = mongoose.model('TimeEntry', timeEntrySchema);
 
 // Serve the static files from the Vue.js build folder
-app.use(express.static(path.join(__dirname, 'dist')));
+app.use(express.static(path.join(__dirname, 'frontend')));
 
 // Route to clock in
 app.post('/api/clock-in', async (req, res) => {
@@ -141,7 +141,7 @@ app.get('/api/previous', async (req, res) => {
 
 // Serve the index.html for any other routes (for Vue.js frontend)
 app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'dist', 'index.html'));
+  res.sendFile(path.join(__dirname, 'frontend', 'index.html'));
 });
 
 // Start the server
