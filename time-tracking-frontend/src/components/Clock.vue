@@ -4,7 +4,7 @@
     <button @click="clockIn" :disabled="clockedIn">Clock In</button>
     <button @click="clockOut" :disabled="!clockedIn">Clock Out</button>
 
-    <h2>Time Since Last Clock-In: {{ formattedElapsedTime }}</h2>
+    <h2 v-if="clockedIn">Time Since Last Clock-In: {{ formattedElapsedTime }}</h2>
 
     <h3>Today's Total Time: {{ formattedTotalTime }}</h3>
     <div style="overflow-x: auto;">
@@ -79,10 +79,6 @@ export default {
       this.totalTime = response.data.totalDuration;
       this.todaysEntries = response.data.entries;
     },
-    async fetchPreviousDaysData() {
-      const response = await axios.get('http://localhost:5050/api/previous');
-      this.previousDays = response.data;
-    },
     async checkClockInStatus() {
       try {
         const response = await axios.get('http://localhost:5050/api/is-clocked-in');
@@ -113,7 +109,6 @@ export default {
   },
   created() {
     this.fetchTodayData();
-    this.fetchPreviousDaysData();
     this.checkClockInStatus(); // Check if user is clocked in when the component is created
   },
 };
