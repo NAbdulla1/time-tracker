@@ -20,9 +20,10 @@ app.use(express.static(path.join(__dirname, 'frontend')));
 
 app.post('/api/clock-in', async (req: Request, res: Response) => {
     try {
-        const newEntry = new TimeEntry({ clockIn: new Date() });
+        const now = new Date();
+        const newEntry = new TimeEntry({ clockIn: now });
         await newEntry.save();
-        res.status(201).send({ message: 'Clocked in' });
+        res.status(201).send({ message: 'Clocked in', clockInTime: now });
     } catch (error) {
         res.status(500).send({ error: 'Error clocking in' });
     }
@@ -46,7 +47,10 @@ app.post('/api/clock-out', async (req: Request, res: Response) => {
 app.get('/api/is-clocked-in', async (req: Request, res: Response) => {
     try {
         const entry = await TimeEntry.findOne({ clockOut: { $exists: false } }).sort({ clockIn: -1 });
-        res.status(200).send({ isClockedIn: !!entry });
+        res.status(200).send({
+            isClockedIn: !!entry,
+            clockInTime: entry ? entry.clockIn : null
+        });
     } catch (error) {
         res.status(500).send({ error: 'Error checking clock-in status' });
     }
