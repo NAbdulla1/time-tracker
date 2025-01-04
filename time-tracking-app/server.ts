@@ -113,6 +113,16 @@ app.get('/api/current-week', async (req: Request, res: Response) => {
     }
 });
 
+app.delete('/api/clock-entry/:id', async (req: Request, res: Response) => {
+    try {
+        const entryId = req.params.id;
+        await TimeEntry.findByIdAndDelete(entryId);
+        res.status(200).send({ message: 'Entry deleted successfully' });
+    } catch (error) {
+        res.status(500).send({ error: 'Error deleting entry' });
+    }
+});
+
 app.get('*', (req: Request, res: Response) => {
     res.sendFile(path.join(__dirname, 'frontend', 'index.html'));
 });

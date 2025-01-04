@@ -35,6 +35,9 @@ export const useStore = defineStore("main", {
         async getWeekDays() {
             const {data} = await axios.get(`${apiBaseUrl}/current-week`);
             this.weekClockEntries = data;
+        },
+        async deleteEntry(entryId) {
+            await axios.delete(`${apiBaseUrl}/clock-entry/${entryId}`);
         }
     }
 });

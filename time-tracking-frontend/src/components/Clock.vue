@@ -14,6 +14,7 @@
             <th>SL</th>
             <th>Clock In</th>
             <th>Clock Out</th>
+            <th>Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -21,11 +22,16 @@
             <td style="text-align: center;">{{ index + 1 }}</td>
             <td>{{ entry.clockIn && displayTime(entry.clockIn) }}</td>
             <td>{{ entry.clockOut && displayTime(entry.clockOut) }}</td>
+            <td style="text-align: center;">
+              <span @click="onDeleteEntry(entry._id)" class="material-symbols-outlined icon-btn">
+                delete
+              </span>
+            </td>
           </tr>
         </tbody>
       </table>
     </div>
-    <Week :elapsedTime="elapsedTime"/>
+    <Week :elapsedTime="elapsedTime" />
   </div>
 </template>
 
@@ -54,7 +60,7 @@ export default {
     },
   },
   methods: {
-    ...mapActions(useStore, ['clockIn', 'clockOut', 'getTodaysData', 'getClockStatus', 'getWeekDays']),
+    ...mapActions(useStore, ['clockIn', 'clockOut', 'getTodaysData', 'getClockStatus', 'getWeekDays', 'deleteEntry']),
     displayTime(dt) {
       const dd = new Date(dt);
       return `${dd.toDateString()} ${dd.toLocaleTimeString()}`;
@@ -78,6 +84,16 @@ export default {
         this.elapsedTime = elapsed;
       }, 1000); // Update every second
     },
+    async onDeleteEntry(id) {
+      //TODO confirm before deleting
+      await this.deleteEntry(id);
+      await this.getClockStatus();
+      await this.getTodaysData();
+      await this.getWeekDays();
+      if (!this.isClockedIn) {
+        this.elapsedTime = 0;
+      }
+    }
   },
   async created() {
     await this.getTodaysData();
@@ -96,5 +112,9 @@ button {
 
 .data-table {
   margin: 0 auto;
+}
+
+.icon-btn {
+  cursor: pointer;
 }
 </style>
