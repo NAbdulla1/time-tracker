@@ -1,7 +1,7 @@
 import * as dotenv from 'dotenv';
 dotenv.config();
 import express, { Application, Request, Response } from 'express';
-import mongoose, { Document } from 'mongoose';
+import mongoose from 'mongoose';
 import bodyParser from 'body-parser';
 import cors from 'cors';
 import path from 'path';
@@ -53,15 +53,6 @@ app.get('/api/is-clocked-in', async (req: Request, res: Response) => {
         });
     } catch (error) {
         res.status(500).send({ error: 'Error checking clock-in status' });
-    }
-});
-
-app.get('/api/last-clock-in', async (req: Request, res: Response) => {
-    try {
-        const entry = await TimeEntry.findOne({ clockOut: { $exists: false } }).sort({ clockIn: -1 });
-        res.status(200).send({ clockInTime: entry ? entry.clockIn : null });
-    } catch (error) {
-        res.status(500).send({ error: 'Error retrieving last clock-in time' });
     }
 });
 
@@ -127,4 +118,3 @@ const port = process.env.PORT || 5050;
 app.listen(port, () => {
     console.log(`Server running on port ${port}`);
 });
-
