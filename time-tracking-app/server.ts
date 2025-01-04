@@ -1,5 +1,6 @@
 import * as dotenv from 'dotenv';
 dotenv.config();
+
 import express, { Application, Request, Response } from 'express';
 import mongoose from 'mongoose';
 import bodyParser from 'body-parser';
@@ -116,5 +117,5 @@ app.get('*', (req: Request, res: Response) => {
 
 const port = process.env.PORT || 5050;
 app.listen(port, () => {
-    console.log(`Server running on port ${port}`);
+    console.log(`Server running on port ${port}.\nURL: http://localhost:${port}\nPress Ctrl+C to quit.`);
 });
