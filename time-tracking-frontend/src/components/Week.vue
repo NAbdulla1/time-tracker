@@ -1,7 +1,7 @@
 <template>
     <div style="text-align: left;">
         <h3>Week Days</h3>
-        
+
         <table class="data-table">
             <thead>
                 <tr>
@@ -18,7 +18,11 @@
                 </tr>
                 <tr>
                     <td colspan="2">Week Total <input type="checkbox" v-model="includeToday" title="Include Today"></td>
-                    <td>{{ weekTotalTime }}</td>
+                    <td>{{ formatTime(weekTotalTime) }}</td>
+                </tr>
+                <tr v-if="includeToday">
+                    <td colspan="2">Reamining Weekly</td>
+                    <td>{{ formatTime(weeklyTotal - weekTotalTime) }}</td>
                 </tr>
             </tbody>
         </table>
@@ -29,6 +33,8 @@
 import axios from 'axios';
 import { computed, onBeforeMount, ref } from 'vue';
 import { formatTime, dateEquals, weekDay } from '../utils';
+
+const weeklyTotal = 40 * 60 * 60; // 40 hours in minutes
 
 const props = defineProps({
     todaysTotalTime: Number
@@ -51,7 +57,7 @@ const weekTotalTime = computed(() => {
         }
     }
 
-    return formatTime(weekTotal);
+    return weekTotal;
 });
 
 async function fetchWeekDaysData() {
