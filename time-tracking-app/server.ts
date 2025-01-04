@@ -6,11 +6,13 @@ import mongoose from 'mongoose';
 import bodyParser from 'body-parser';
 import cors from 'cors';
 import path from 'path';
+import morgan from 'morgan';
 import { getEntriesGroupedByDate, getWeekStartDate, getNextWeekStartDate } from './utils';
 import TimeEntry from './db/models/TimeEntry';
 
 const app: Application = express();
 app.use(cors());
+app.use(morgan('dev'));
 app.use(bodyParser.json());
 
 mongoose.connect(process.env.DB_URL || '')
