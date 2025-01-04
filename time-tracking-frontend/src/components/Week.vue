@@ -12,8 +12,8 @@
             </thead>
             <tbody>
                 <tr v-for="day in weekDays" :key="day.date">
-                    <td>{{day.date}}</td>
-                    <td>{{weekDay(day.date)}}</td>
+                    <td>{{ day.date }}</td>
+                    <td>{{ weekDay(day.date) }}</td>
                     <td>{{ formatTime(day.totalDuration) }}</td>
                 </tr>
                 <tr>
@@ -30,6 +30,10 @@ import axios from 'axios';
 import { computed, onBeforeMount, ref } from 'vue';
 import { formatTime, dateEquals, weekDay } from '../utils';
 
+const props = defineProps({
+    todaysTotalTime: Number
+});
+
 const weekDays = ref([]);
 const includeToday = ref(false);
 
@@ -39,13 +43,12 @@ onBeforeMount(async () => {
 
 const weekTotalTime = computed(() => {
     const today = new Date();
-    let weekTotal = 0;
+    let weekTotal = includeToday.value ? props.todaysTotalTime : 0;
     for (let entry of weekDays.value) {
         const date = new Date(entry.date);
-        if (!includeToday.value && dateEquals(date, today)) {
-            continue;
+        if (!dateEquals(date, today)) {
+            weekTotal += entry.totalDuration;
         }
-        weekTotal += entry.totalDuration;
     }
 
     return formatTime(weekTotal);

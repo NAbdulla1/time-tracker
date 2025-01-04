@@ -25,7 +25,7 @@
         </tbody>
       </table>
     </div>
-    <Week />
+    <Week :todaysTotalTime="todaysTotalDuration"/>
   </div>
 </template>
 
@@ -53,7 +53,10 @@ export default {
     },
     // Formatted total time for today in HH:MM:SS
     formattedTotalTime() {
-      return formatTime(this.totalTime + this.elapsedTime);
+      return formatTime(this.todaysTotalDuration);
+    },
+    todaysTotalDuration() {
+      return this.totalTime + this.elapsedTime;
     }
   },
   methods: {
