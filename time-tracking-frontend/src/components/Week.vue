@@ -1,9 +1,10 @@
 <template>
     <div style="text-align: left;">
-        <h3>Week Days ({{ primaryCycleTitle }})</h3>
-
         <table class="data-table">
             <thead>
+                <tr>
+                    <th colspan="3" style="text-align: center;">Week Days ({{ primaryCycleTitle }})</th>
+                </tr>
                 <tr>
                     <th>Date</th>
                     <th>Day</th>
@@ -31,7 +32,7 @@
             </tbody>
         </table>
 
-        <div v-if="store.settings.secondaryWeekEnabled" style="margin-top: 15px;">
+        <div v-if="store.settings.secondaryWeekEnabled" style="margin-top: 16px; text-align: center;">
             <label style="cursor: pointer;">
                 <input type="checkbox" v-model="showSecondaryCycle" @change="onToggleSecondaryCycle">
                 Show {{ secondaryCycleTitle }}
@@ -39,9 +40,11 @@
         </div>
 
         <div v-if="store.settings.secondaryWeekEnabled && showSecondaryCycle" style="margin-top: 15px;">
-            <h3>{{ secondaryCycleTitle }}</h3>
             <table class="data-table">
                 <thead>
+                    <tr>
+                        <th colspan="3" style="text-align: center;">Week Days ({{ secondaryCycleTitle }})</th>
+                    </tr>
                     <tr>
                         <th>Date</th>
                         <th>Day</th>

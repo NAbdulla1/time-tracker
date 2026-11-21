@@ -3,6 +3,7 @@ import {
     deleteEntryParamsSchema,
     clockInBodySchema,
     clockOutBodySchema,
+    updateEntryBodySchema,
 } from '../schemas/timeEntry.schema';
 
 describe('TimeEntry Validation Schemas', () => {
@@ -90,6 +91,58 @@ describe('TimeEntry Validation Schemas', () => {
                 isAdmin: true,
             });
             expect(result.success).toBe(false);
+        });
+    });
+
+    describe('updateEntryBodySchema', () => {
+        it('should accept valid clockIn and clockOut where clockOut > clockIn', () => {
+            const result = updateEntryBodySchema.safeParse({
+                clockIn: '2026-11-21T09:00:00.000Z',
+                clockOut: '2026-11-21T17:00:00.000Z',
+            });
+            expect(result.success).toBe(true);
+        });
+
+        it('should accept an optional valid timeZone string', () => {
+            const result = updateEntryBodySchema.safeParse({
+                clockIn: '2026-11-21T09:00:00.000Z',
+                clockOut: '2026-11-21T17:00:00.000Z',
+                timeZone: 'Asia/Dhaka',
+            });
+            expect(result.success).toBe(true);
+        });
+
+        it('should reject an invalid timeZone string', () => {
+            const result = updateEntryBodySchema.safeParse({
+                clockIn: '2026-11-21T09:00:00.000Z',
+                clockOut: '2026-11-21T17:00:00.000Z',
+                timeZone: 'Invalid/City_Timezone',
+            });
+            expect(result.success).toBe(false);
+        });
+
+        it('should reject when clockOut is before clockIn', () => {
+            const result = updateEntryBodySchema.safeParse({
+                clockIn: '2026-11-21T17:00:00.000Z',
+                clockOut: '2026-11-21T09:00:00.000Z',
+            });
+            expect(result.success).toBe(false);
+            if (!result.success) {
+                expect(result.error.issues[0].message).toContain('clockOut must be after clockIn');
+            }
+        });
+
+        it('should reject when clockOut equals clockIn', () => {
+            const result = updateEntryBodySchema.safeParse({
+                clockIn: '2026-11-21T09:00:00.000Z',
+                clockOut: '2026-11-21T09:00:00.000Z',
+            });
+            expect(result.success).toBe(false);
+        });
+
+        it('should reject when clockIn or clockOut is missing', () => {
+            expect(updateEntryBodySchema.safeParse({ clockIn: '2026-11-21T09:00:00.000Z' }).success).toBe(false);
+            expect(updateEntryBodySchema.safeParse({ clockOut: '2026-11-21T17:00:00.000Z' }).success).toBe(false);
         });
     });
 });
