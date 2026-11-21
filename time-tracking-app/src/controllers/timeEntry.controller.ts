@@ -3,9 +3,10 @@ import { timeEntryService } from '../services/timeEntry.service';
 import { isValidTimeZone } from '../schemas/settings.schema';
 
 function extractTimeZone(req: Request): string | undefined {
-    const headerTz = req.headers['x-timezone'] as string | undefined;
-    const queryTz = req.query.tz as string | undefined;
-    const candidate = queryTz || headerTz;
+    const bodyTz = req.body?.timeZone as string | undefined;
+    const headerTz = (req.headers['x-timezone'] || req.headers['timezone']) as string | undefined;
+    const queryTz = (req.query.tz || req.query.timeZone) as string | undefined;
+    const candidate = bodyTz || queryTz || headerTz;
     if (candidate && isValidTimeZone(candidate)) {
         return candidate;
     }
@@ -92,6 +93,27 @@ export const getThursdayWeek = async (req: Request, res: Response): Promise<void
         res.status(200).send(thursdayWeekEntries);
     } catch (error) {
         res.status(500).send({ error: 'Error retrieving Thursday-to-Wednesday entries' });
+    }
+};
+
+export const updateEntry = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const entryId = req.params.id;
+        const clockIn = new Date(req.body.clockIn);
+        const clockOut = new Date(req.body.clockOut);
+        const timeZone = extractTimeZone(req);
+        const updated = await timeEntryService.updateEntry(entryId, clockIn, clockOut, timeZone);
+        if (!updated) {
+            res.status(404).send({ error: 'Entry not found' });
+            return;
+        }
+        res.status(200).send({ message: 'Entry updated successfully', entry: updated });
+    } catch (error: any) {
+        if (error.message === 'Changing the entry date is not allowed') {
+            res.status(400).send({ error: error.message });
+            return;
+        }
+        res.status(500).send({ error: 'Error updating entry' });
     }
 };
 

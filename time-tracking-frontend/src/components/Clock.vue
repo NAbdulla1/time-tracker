@@ -22,8 +22,21 @@
             <td style="text-align: center;">{{ index + 1 }}</td>
             <td>{{ entry.clockIn && displayTime(entry.clockIn) }}</td>
             <td>{{ entry.clockOut && displayTime(entry.clockOut) }}</td>
-            <td style="text-align: center;">
-              <span @click="onDeleteEntry(entry._id)" class="material-symbols-outlined icon-btn" title="Delete entry">
+            <td style="text-align: center; white-space: nowrap;">
+              <span
+                v-if="entry.clockIn && entry.clockOut"
+                @click="onOpenEditModal(entry)"
+                class="material-symbols-outlined icon-btn edit-btn"
+                title="Edit entry"
+                style="margin-right: 8px;"
+              >
+                edit
+              </span>
+              <span
+                @click="onDeleteEntry(entry._id)"
+                class="material-symbols-outlined icon-btn delete-btn"
+                title="Delete entry"
+              >
                 delete
               </span>
             </td>
@@ -32,24 +45,44 @@
       </table>
     </div>
     <Week :elapsedTime="elapsedTime" />
+
+    <!-- Edit Entry Modal -->
+    <EditEntryModal
+      :show="isEditModalOpen"
+      :entry="editingEntry"
+      :timeZone="clientTimeZone"
+      @close="onCloseEditModal"
+      @saved="onCloseEditModal"
+    />
   </div>
 </template>
 
 <script>
 import { formatTime, formatDisplayDateTime } from '../utils';
 import Week from './Week.vue';
+import EditEntryModal from './EditEntryModal.vue';
 import { mapActions, mapState } from 'pinia';
 import { useStore } from '../store';
 
 export default {
-  components: { Week },
+  components: { Week, EditEntryModal },
   data() {
     return {
       elapsedTime: 0, // Store the elapsed time since last clock-in in seconds
+      isEditModalOpen: false,
+      editingEntry: null,
     };
   },
   computed: {
     ...mapState(useStore, ['isClockedIn', 'todaysTotalTime', 'todaysEntries', 'lastClockInTime', 'secondaryClockEntries', 'settings']),
+    clientTimeZone() {
+      return (
+        this.settings?.timeZone ||
+        localStorage.getItem('user_timezone') ||
+        (typeof Intl !== 'undefined' && Intl.DateTimeFormat().resolvedOptions().timeZone) ||
+        'UTC'
+      );
+    },
     // Formatted elapsed time in HH:MM:SS
     formattedElapsedTime() {
       return formatTime(this.elapsedTime);
@@ -60,9 +93,28 @@ export default {
     },
   },
   methods: {
-    ...mapActions(useStore, ['clockIn', 'clockOut', 'getTodaysData', 'getClockStatus', 'getWeekDays', 'getSecondaryWeekDays', 'deleteEntry']),
+    ...mapActions(useStore, [
+      'clockIn',
+      'clockOut',
+      'getTodaysData',
+      'getClockStatus',
+      'getWeekDays',
+      'getSecondaryWeekDays',
+      'updateEntry',
+      'deleteEntry',
+    ]),
     displayTime(dt) {
-      return formatDisplayDateTime(dt, this.settings?.timeZone);
+      return formatDisplayDateTime(dt, this.clientTimeZone);
+    },
+    onOpenEditModal(entry) {
+      if (entry.clockIn && entry.clockOut) {
+        this.editingEntry = entry;
+        this.isEditModalOpen = true;
+      }
+    },
+    onCloseEditModal() {
+      this.isEditModalOpen = false;
+      this.editingEntry = null;
     },
     async onClockIn() {
       await this.clockIn();
@@ -72,7 +124,7 @@ export default {
       await this.clockOut();
       await this.getTodaysData();
       await this.getWeekDays();
-      if (this.secondaryClockEntries && this.secondaryClockEntries.length > 0) {
+      if (this.settings?.secondaryWeekEnabled) {
         await this.getSecondaryWeekDays();
       }
       this.elapsedTime = 0; // Reset elapsed time
@@ -91,7 +143,7 @@ export default {
       await this.getClockStatus();
       await this.getTodaysData();
       await this.getWeekDays();
-      if (this.secondaryClockEntries && this.secondaryClockEntries.length > 0) {
+      if (this.settings?.secondaryWeekEnabled) {
         await this.getSecondaryWeekDays();
       }
       if (!this.isClockedIn) {
@@ -120,5 +172,20 @@ button {
 
 .icon-btn {
   cursor: pointer;
+  vertical-align: middle;
+  font-size: 18px;
+  transition: color 0.2s, transform 0.1s;
+}
+
+.icon-btn:hover {
+  transform: scale(1.15);
+}
+
+.edit-btn:hover {
+  color: #646cff;
+}
+
+.delete-btn:hover {
+  color: #ef4444;
 }
 </style>

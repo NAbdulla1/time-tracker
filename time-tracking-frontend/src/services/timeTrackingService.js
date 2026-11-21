@@ -72,6 +72,17 @@ export const timeTrackingService = {
   },
 
   /**
+   * Update a clock entry by ID
+   * @param {string} entryId
+   * @param {{ clockIn: string, clockOut: string }} updateData
+   * @returns {Promise<{ message: string, entry: Object }>}
+   */
+  async updateEntry(entryId, updateData) {
+    const { data } = await api.put(`/clock-entry/${entryId}`, updateData);
+    return data;
+  },
+
+  /**
    * Delete a clock entry by ID
    * @param {string} entryId
    * @returns {Promise<{ message: string }>}

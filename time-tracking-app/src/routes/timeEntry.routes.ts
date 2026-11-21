@@ -5,6 +5,7 @@ import {
     clockInBodySchema,
     clockOutBodySchema,
     deleteEntryParamsSchema,
+    updateEntryBodySchema,
 } from '../schemas/timeEntry.schema';
 
 const router = Router();
@@ -17,6 +18,11 @@ router.get('/previous', timeEntryController.getPrevious);
 router.get('/current-week', timeEntryController.getCurrentWeek);
 router.get('/secondary-week', timeEntryController.getSecondaryWeek);
 router.get('/thursday-week', timeEntryController.getThursdayWeek);
+router.put(
+    '/clock-entry/:id',
+    validate({ params: deleteEntryParamsSchema, body: updateEntryBodySchema }),
+    timeEntryController.updateEntry
+);
 router.delete('/clock-entry/:id', validate({ params: deleteEntryParamsSchema }), timeEntryController.deleteEntry);
 
 export default router;

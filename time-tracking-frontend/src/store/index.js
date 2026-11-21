@@ -108,6 +108,15 @@ export const useStore = defineStore("main", {
         async getThursdayWeekDays() {
             return this.getSecondaryWeekDays();
         },
+        async updateEntry(entryId, updateData) {
+            const result = await timeTrackingService.updateEntry(entryId, updateData);
+            await Promise.all([
+                this.getTodaysData(),
+                this.getWeekDays(),
+                this.getSecondaryWeekDays(),
+            ]);
+            return result;
+        },
         async deleteEntry(entryId) {
             await timeTrackingService.deleteEntry(entryId);
         }

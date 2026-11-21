@@ -3,6 +3,7 @@ import {
     getEntriesGroupedByDate,
     getCycleRange,
     getTodayRange,
+    formatDateInTimeZone,
 } from '../utils/dateUtils';
 import { settingsService } from './settings.service';
 
@@ -53,8 +54,7 @@ export class TimeEntryService {
      * Get entries and total duration for today in the target timezone
      */
     async getTodayEntries(timeZoneOverride?: string): Promise<{ entries: ITimeEntry[]; totalDuration: number }> {
-        const settings = await settingsService.getSettings();
-        const timeZone = timeZoneOverride || settings.timeZone || 'UTC';
+        const timeZone = timeZoneOverride || (await settingsService.getSettings()).timeZone || 'UTC';
         const { startDate, endDate } = getTodayRange(new Date(), timeZone);
 
         const entries = await TimeEntry.find({
@@ -78,8 +78,7 @@ export class TimeEntryService {
      * Get all previous completed entries grouped by date in the target timezone
      */
     async getPreviousEntries(timeZoneOverride?: string): Promise<GroupedDateEntry[]> {
-        const settings = await settingsService.getSettings();
-        const timeZone = timeZoneOverride || settings.timeZone || 'UTC';
+        const timeZone = timeZoneOverride || (await settingsService.getSettings()).timeZone || 'UTC';
 
         const entries = await TimeEntry.find({ clockOut: { $exists: true } }).sort({ clockIn: -1 });
         const entriesGroupedByDate = getEntriesGroupedByDate(entries, timeZone);
@@ -133,6 +132,35 @@ export class TimeEntryService {
      */
     async getThursdayCycleEntries(timeZoneOverride?: string): Promise<GroupedDateEntry[]> {
         return this.getSecondaryWeekEntries(timeZoneOverride);
+    }
+
+    /**
+     * Update an existing completed entry by ID.
+     * Prevents changing the calendar date of the entry in the specified timezone.
+     */
+    async updateEntry(
+        entryId: string,
+        clockIn: Date,
+        clockOut: Date,
+        timeZoneOverride?: string
+    ): Promise<ITimeEntry | null> {
+        const entry = await TimeEntry.findById(entryId);
+        if (!entry) {
+            return null;
+        }
+
+        const timeZone = timeZoneOverride || (await settingsService.getSettings()).timeZone || 'UTC';
+
+        const originalDate = formatDateInTimeZone(entry.clockIn, timeZone);
+        const newDate = formatDateInTimeZone(clockIn, timeZone);
+        if (originalDate !== newDate) {
+            throw new Error('Changing the entry date is not allowed');
+        }
+
+        entry.clockIn = clockIn;
+        entry.clockOut = clockOut;
+        await entry.save();
+        return entry;
     }
 
     /**
