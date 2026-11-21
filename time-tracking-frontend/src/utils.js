@@ -68,6 +68,33 @@ export function dateEquals(date1, date2) {
 }
 
 /**
+ * Calculates start and end Date bounds for a 7-day cycle starting on `startDayOfWeek` (0-6)
+ * in the specified timezone using dayjs.
+ */
+export function getCycleRange(
+    referenceDate = new Date(),
+    startDayOfWeek = 1,
+    timeZone = 'UTC',
+    lookbackOnSameDay = false
+) {
+    const localNow = dayjs(referenceDate).tz(timeZone);
+    const currentWeekday = localNow.day(); // 0 = Sun, 1 = Mon, ..., 6 = Sat
+    let daysToSubtract = (currentWeekday - (startDayOfWeek % 7) + 7) % 7;
+
+    if (lookbackOnSameDay && daysToSubtract === 0) {
+        daysToSubtract = 7;
+    }
+
+    const start = localNow.subtract(daysToSubtract, 'day').startOf('day');
+    const end = start.add(7, 'day');
+
+    return {
+        startDate: start.toDate(),
+        endDate: end.toDate(),
+    };
+}
+
+/**
  * Returns today's calendar date string (YYYY-MM-DD) in the specified timezone
  */
 export function getTodayDateString(timeZone = 'UTC') {

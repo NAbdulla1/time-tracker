@@ -124,7 +124,7 @@ export default {
       await this.clockOut();
       await this.getTodaysData();
       await this.getWeekDays();
-      if (this.secondaryClockEntries && this.secondaryClockEntries.length > 0) {
+      if (this.settings?.secondaryWeekEnabled) {
         await this.getSecondaryWeekDays();
       }
       this.elapsedTime = 0; // Reset elapsed time
@@ -143,7 +143,7 @@ export default {
       await this.getClockStatus();
       await this.getTodaysData();
       await this.getWeekDays();
-      if (this.secondaryClockEntries && this.secondaryClockEntries.length > 0) {
+      if (this.settings?.secondaryWeekEnabled) {
         await this.getSecondaryWeekDays();
       }
       if (!this.isClockedIn) {
