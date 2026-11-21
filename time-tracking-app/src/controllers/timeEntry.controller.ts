@@ -1,5 +1,16 @@
 import { Request, Response } from 'express';
 import { timeEntryService } from '../services/timeEntry.service';
+import { isValidTimeZone } from '../schemas/settings.schema';
+
+function extractTimeZone(req: Request): string | undefined {
+    const headerTz = req.headers['x-timezone'] as string | undefined;
+    const queryTz = req.query.tz as string | undefined;
+    const candidate = queryTz || headerTz;
+    if (candidate && isValidTimeZone(candidate)) {
+        return candidate;
+    }
+    return undefined;
+}
 
 export const clockIn = async (req: Request, res: Response): Promise<void> => {
     try {
@@ -36,7 +47,8 @@ export const getClockStatus = async (req: Request, res: Response): Promise<void>
 
 export const getToday = async (req: Request, res: Response): Promise<void> => {
     try {
-        const todayData = await timeEntryService.getTodayEntries();
+        const timeZone = extractTimeZone(req);
+        const todayData = await timeEntryService.getTodayEntries(timeZone);
         res.status(200).send(todayData);
     } catch (error) {
         res.status(500).send({ error: "Error retrieving today's entries" });
@@ -45,7 +57,8 @@ export const getToday = async (req: Request, res: Response): Promise<void> => {
 
 export const getPrevious = async (req: Request, res: Response): Promise<void> => {
     try {
-        const previousEntries = await timeEntryService.getPreviousEntries();
+        const timeZone = extractTimeZone(req);
+        const previousEntries = await timeEntryService.getPreviousEntries(timeZone);
         res.status(200).send(previousEntries);
     } catch (error) {
         res.status(500).send({ error: 'Error retrieving previous entries' });
@@ -54,16 +67,28 @@ export const getPrevious = async (req: Request, res: Response): Promise<void> =>
 
 export const getCurrentWeek = async (req: Request, res: Response): Promise<void> => {
     try {
-        const currentWeekEntries = await timeEntryService.getCurrentWeekEntries();
+        const timeZone = extractTimeZone(req);
+        const currentWeekEntries = await timeEntryService.getCurrentWeekEntries(timeZone);
         res.status(200).send(currentWeekEntries);
     } catch (error) {
         res.status(500).send({ error: 'Error retrieving current week entries' });
     }
 };
 
+export const getSecondaryWeek = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const timeZone = extractTimeZone(req);
+        const secondaryWeekEntries = await timeEntryService.getSecondaryWeekEntries(timeZone);
+        res.status(200).send(secondaryWeekEntries);
+    } catch (error) {
+        res.status(500).send({ error: 'Error retrieving secondary week entries' });
+    }
+};
+
 export const getThursdayWeek = async (req: Request, res: Response): Promise<void> => {
     try {
-        const thursdayWeekEntries = await timeEntryService.getThursdayCycleEntries();
+        const timeZone = extractTimeZone(req);
+        const thursdayWeekEntries = await timeEntryService.getThursdayCycleEntries(timeZone);
         res.status(200).send(thursdayWeekEntries);
     } catch (error) {
         res.status(500).send({ error: 'Error retrieving Thursday-to-Wednesday entries' });

@@ -15,6 +15,7 @@ router.get('/is-clocked-in', timeEntryController.getClockStatus);
 router.get('/today', timeEntryController.getToday);
 router.get('/previous', timeEntryController.getPrevious);
 router.get('/current-week', timeEntryController.getCurrentWeek);
+router.get('/secondary-week', timeEntryController.getSecondaryWeek);
 router.get('/thursday-week', timeEntryController.getThursdayWeek);
 router.delete('/clock-entry/:id', validate({ params: deleteEntryParamsSchema }), timeEntryController.deleteEntry);
 

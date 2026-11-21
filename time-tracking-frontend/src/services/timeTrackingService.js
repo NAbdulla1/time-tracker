@@ -56,12 +56,19 @@ export const timeTrackingService = {
   },
 
   /**
-   * Fetch entries for Thursday-to-Wednesday cycle grouped by date
+   * Fetch entries for the secondary week cycle grouped by date
    * @returns {Promise<Array>}
    */
-  async getThursdayWeekDays() {
-    const { data } = await api.get('/thursday-week');
+  async getSecondaryWeekDays() {
+    const { data } = await api.get('/secondary-week');
     return data;
+  },
+
+  /**
+   * Alias for backward compatibility
+   */
+  async getThursdayWeekDays() {
+    return this.getSecondaryWeekDays();
   },
 
   /**

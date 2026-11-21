@@ -7,4 +7,11 @@ const api = axios.create({
   },
 });
 
+api.interceptors.request.use((config) => {
+  const storedTz = localStorage.getItem('user_timezone');
+  const browserTz = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
+  config.headers['X-Timezone'] = storedTz || browserTz;
+  return config;
+});
+
 export default api;
