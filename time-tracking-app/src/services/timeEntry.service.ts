@@ -10,9 +10,10 @@ export interface GroupedDateEntry {
 export class TimeEntryService {
     /**
      * Create a new clock-in entry
+     * @param clockInDate Optional custom clockIn Date, defaults to now
      */
-    async clockIn(): Promise<{ clockInTime: Date }> {
-        const now = new Date();
+    async clockIn(clockInDate?: Date): Promise<{ clockInTime: Date }> {
+        const now = clockInDate || new Date();
         const newEntry = new TimeEntry({ clockIn: now });
         await newEntry.save();
         return { clockInTime: now };
@@ -20,13 +21,14 @@ export class TimeEntryService {
 
     /**
      * Clock out the currently active session
+     * @param clockOutDate Optional custom clockOut Date, defaults to now
      */
-    async clockOut(): Promise<ITimeEntry | null> {
+    async clockOut(clockOutDate?: Date): Promise<ITimeEntry | null> {
         const entry = await TimeEntry.findOne({ clockOut: { $exists: false } }).sort({ clockIn: -1 });
         if (!entry) {
             return null;
         }
-        entry.clockOut = new Date();
+        entry.clockOut = clockOutDate || new Date();
         await entry.save();
         return entry;
     }

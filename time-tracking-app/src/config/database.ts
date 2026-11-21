@@ -1,12 +1,12 @@
 import mongoose from 'mongoose';
+import { env } from './env';
 
 /**
- * Connect to MongoDB using DB_URL from environment
+ * Connect to MongoDB using validated DB_URL from environment
  */
 export const connectDB = async (): Promise<typeof mongoose> => {
-    const dbUrl = process.env.DB_URL || '';
     try {
-        const conn = await mongoose.connect(dbUrl);
+        const conn = await mongoose.connect(env.DB_URL);
         console.log('Connected to MongoDB');
         return conn;
     } catch (err) {

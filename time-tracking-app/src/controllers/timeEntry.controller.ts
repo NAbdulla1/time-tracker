@@ -3,7 +3,8 @@ import { timeEntryService } from '../services/timeEntry.service';
 
 export const clockIn = async (req: Request, res: Response): Promise<void> => {
     try {
-        const { clockInTime } = await timeEntryService.clockIn();
+        const customClockIn = req.body?.clockIn ? new Date(req.body.clockIn) : undefined;
+        const { clockInTime } = await timeEntryService.clockIn(customClockIn);
         res.status(201).send({ message: 'Clocked in', clockInTime });
     } catch (error) {
         res.status(500).send({ error: 'Error clocking in' });
@@ -12,7 +13,8 @@ export const clockIn = async (req: Request, res: Response): Promise<void> => {
 
 export const clockOut = async (req: Request, res: Response): Promise<void> => {
     try {
-        const entry = await timeEntryService.clockOut();
+        const customClockOut = req.body?.clockOut ? new Date(req.body.clockOut) : undefined;
+        const entry = await timeEntryService.clockOut(customClockOut);
         if (entry) {
             res.status(200).send({ message: 'Clocked out' });
         } else {
