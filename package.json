@@ -1,0 +1,13 @@
+{
+  "name": "time-tracker-root",
+  "private": true,
+  "scripts": {
+    "install:all": "npm --prefix time-tracking-frontend install && npm --prefix time-tracking-app install",
+    "build:frontend": "npm --prefix time-tracking-frontend run build",
+    "build:backend": "npm --prefix time-tracking-app run build",
+    "make-exe": "npm --prefix time-tracking-app run make-exe",
+    "copy-env": "node -e \"const fs=require('fs'); if(!fs.existsSync('time-tracking-app/.env')) fs.copyFileSync('time-tracking-app/.env-example', 'time-tracking-app/.env');\"",
+    "build": "npm run build:frontend && npm run build:backend && npm run make-exe && npm run copy-env",
+    "setup": "npm run install:all && npm run build"
+  }
+}
