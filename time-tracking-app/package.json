@@ -6,6 +6,8 @@
   "scripts": {
     "dev": "nodemon --exec ts-node src/server.ts",
     "build": "tsc",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "make-exe": "pkg . --targets node*-win-x64 --output time-tracking-app.exe"
   },
   "keywords": [],
@@ -30,7 +32,8 @@
     "nodemon": "^3.1.7",
     "pkg": "^5.8.1",
     "ts-node": "^10.9.2",
-    "typescript": "^5.7.2"
+    "typescript": "^5.7.2",
+    "vitest": "^5.1.1"
   },
   "pkg": {
     "assets": [
