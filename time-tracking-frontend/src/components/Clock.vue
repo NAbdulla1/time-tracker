@@ -49,7 +49,7 @@ export default {
     };
   },
   computed: {
-    ...mapState(useStore, ['isClockedIn', 'todaysTotalTime', 'todaysEntries', 'lastClockInTime']),
+    ...mapState(useStore, ['isClockedIn', 'todaysTotalTime', 'todaysEntries', 'lastClockInTime', 'thursdayClockEntries']),
     // Formatted elapsed time in HH:MM:SS
     formattedElapsedTime() {
       return formatTime(this.elapsedTime);
@@ -60,7 +60,7 @@ export default {
     },
   },
   methods: {
-    ...mapActions(useStore, ['clockIn', 'clockOut', 'getTodaysData', 'getClockStatus', 'getWeekDays', 'deleteEntry']),
+    ...mapActions(useStore, ['clockIn', 'clockOut', 'getTodaysData', 'getClockStatus', 'getWeekDays', 'getThursdayWeekDays', 'deleteEntry']),
     displayTime(dt) {
       const dd = new Date(dt);
       return `${dd.toDateString()} ${dd.toLocaleTimeString()}`;
@@ -73,6 +73,9 @@ export default {
       await this.clockOut();
       await this.getTodaysData();
       await this.getWeekDays();
+      if (this.thursdayClockEntries && this.thursdayClockEntries.length > 0) {
+        await this.getThursdayWeekDays();
+      }
       this.elapsedTime = 0; // Reset elapsed time
     },
     calculateElapsedTime() {
@@ -90,6 +93,9 @@ export default {
       await this.getClockStatus();
       await this.getTodaysData();
       await this.getWeekDays();
+      if (this.thursdayClockEntries && this.thursdayClockEntries.length > 0) {
+        await this.getThursdayWeekDays();
+      }
       if (!this.isClockedIn) {
         this.elapsedTime = 0;
       }

@@ -9,7 +9,9 @@ export const useStore = defineStore("main", {
         lastClockInTime: null,
         todaysTotalTime: [],
         todaysEntries: [],
-        weekClockEntries: []
+        weekClockEntries: [],
+        thursdayClockEntries: [],
+        isThursdayLoading: false
     }),
     actions: {
         async clockIn() {
@@ -35,6 +37,16 @@ export const useStore = defineStore("main", {
         async getWeekDays() {
             const {data} = await axios.get(`${apiBaseUrl}/current-week`);
             this.weekClockEntries = data;
+        },
+        async getThursdayWeekDays() {
+            this.isThursdayLoading = true;
+            try {
+                const { data } = await axios.get(`${apiBaseUrl}/thursday-week`);
+                this.thursdayClockEntries = data;
+                return data;
+            } finally {
+                this.isThursdayLoading = false;
+            }
         },
         async deleteEntry(entryId) {
             await axios.delete(`${apiBaseUrl}/clock-entry/${entryId}`);
