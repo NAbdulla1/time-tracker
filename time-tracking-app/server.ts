@@ -7,7 +7,7 @@ import bodyParser from 'body-parser';
 import cors from 'cors';
 import path from 'path';
 import morgan from 'morgan';
-import { getEntriesGroupedByDate, getWeekStartDate, getNextWeekStartDate } from './utils';
+import { getEntriesGroupedByDate, getWeekStartDate, getNextWeekStartDate, getThursdayCycleRange } from './utils';
 import TimeEntry from './db/models/TimeEntry';
 
 const app: Application = express();
@@ -110,6 +110,23 @@ app.get('/api/current-week', async (req: Request, res: Response) => {
         res.status(200).send(Object.values(entriesGroupedByDate));
     } catch (error) {
         res.status(500).send({ error: 'Error retrieving current week entries' });
+    }
+});
+
+app.get('/api/thursday-week', async (req: Request, res: Response) => {
+    try {
+        const now = new Date();
+        const { startDate, endDate } = getThursdayCycleRange(now);
+
+        const entries = await TimeEntry.find({
+            clockIn: { $gte: startDate },
+            clockOut: { $lt: endDate },
+        });
+
+        const entriesGroupedByDate = getEntriesGroupedByDate(entries);
+        res.status(200).send(Object.values(entriesGroupedByDate));
+    } catch (error) {
+        res.status(500).send({ error: 'Error retrieving Thursday-to-Wednesday entries' });
     }
 });
 

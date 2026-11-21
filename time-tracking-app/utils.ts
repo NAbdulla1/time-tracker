@@ -61,3 +61,29 @@ export function getNextWeekStartDate(now: Date): Date {
 
     return nextWeeksFirstDay;
 }
+
+/**
+ * Returns the date range for the Thursday-to-Wednesday cycle.
+ * If referenceDate is Thursday, queries from the previous Thursday (7 days ago) to yesterday (Wednesday).
+ * For all other days, queries from the most recent Thursday to the upcoming Wednesday.
+ *
+ * @param {Date} referenceDate - The reference date (defaults to current date).
+ * @returns {{ startDate: Date, endDate: Date }} The start date (Thursday 00:00:00) and exclusive end date (next Thursday 00:00:00).
+ */
+export function getThursdayCycleRange(referenceDate: Date = new Date()): { startDate: Date; endDate: Date } {
+    const day: number = referenceDate.getDay();
+    let daysToSubtract: number = (day - 4 + 7) % 7;
+    if (daysToSubtract === 0) {
+        daysToSubtract = 7;
+    }
+
+    const startDate: Date = new Date(referenceDate);
+    startDate.setDate(startDate.getDate() - daysToSubtract);
+    startDate.setHours(0, 0, 0, 0);
+
+    const endDate: Date = new Date(startDate);
+    endDate.setDate(endDate.getDate() + 7);
+    endDate.setHours(0, 0, 0, 0);
+
+    return { startDate, endDate };
+}

@@ -4,3 +4,4 @@ frontend
 build
 *.exe
 .env
+.DS_Store
