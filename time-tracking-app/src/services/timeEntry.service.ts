@@ -1,5 +1,10 @@
 import TimeEntry, { ITimeEntry } from '../models/TimeEntry';
-import { getEntriesGroupedByDate, getWeekStartDate, getNextWeekStartDate, getThursdayCycleRange } from '../utils/dateUtils';
+import {
+    getEntriesGroupedByDate,
+    getCycleRange,
+    getTodayRange,
+} from '../utils/dateUtils';
+import { settingsService } from './settings.service';
 
 export interface GroupedDateEntry {
     date: string;
@@ -45,15 +50,15 @@ export class TimeEntryService {
     }
 
     /**
-     * Get entries and total duration for today
+     * Get entries and total duration for today in the target timezone
      */
-    async getTodayEntries(): Promise<{ entries: ITimeEntry[]; totalDuration: number }> {
-        const today = new Date();
-        const startOfDay = new Date(today.setHours(0, 0, 0, 0));
-        const endOfDay = new Date(today.setHours(23, 59, 59, 999));
+    async getTodayEntries(timeZoneOverride?: string): Promise<{ entries: ITimeEntry[]; totalDuration: number }> {
+        const settings = await settingsService.getSettings();
+        const timeZone = timeZoneOverride || settings.timeZone || 'UTC';
+        const { startDate, endDate } = getTodayRange(new Date(), timeZone);
 
         const entries = await TimeEntry.find({
-            clockIn: { $gte: startOfDay, $lt: endOfDay },
+            clockIn: { $gte: startDate, $lt: endDate },
         });
 
         const totalDuration = entries.reduce((total, entry) => {
@@ -70,45 +75,64 @@ export class TimeEntryService {
     }
 
     /**
-     * Get all previous completed entries grouped by date
+     * Get all previous completed entries grouped by date in the target timezone
      */
-    async getPreviousEntries(): Promise<GroupedDateEntry[]> {
+    async getPreviousEntries(timeZoneOverride?: string): Promise<GroupedDateEntry[]> {
+        const settings = await settingsService.getSettings();
+        const timeZone = timeZoneOverride || settings.timeZone || 'UTC';
+
         const entries = await TimeEntry.find({ clockOut: { $exists: true } }).sort({ clockIn: -1 });
-        const entriesGroupedByDate = getEntriesGroupedByDate(entries);
+        const entriesGroupedByDate = getEntriesGroupedByDate(entries, timeZone);
         return Object.values(entriesGroupedByDate);
     }
 
     /**
-     * Get current week entries grouped by date
+     * Get current week entries grouped by date according to configured firstDayOfWeek and timezone
      */
-    async getCurrentWeekEntries(): Promise<GroupedDateEntry[]> {
-        const now = new Date();
-        const firstDay = getWeekStartDate(now);
-        const nextWeeksFirstDay = getNextWeekStartDate(now);
+    async getCurrentWeekEntries(timeZoneOverride?: string): Promise<GroupedDateEntry[]> {
+        const settings = await settingsService.getSettings();
+        const timeZone = timeZoneOverride || settings.timeZone || 'UTC';
+        const firstDayOfWeek = settings.firstDayOfWeek ?? 1;
 
-        const entries = await TimeEntry.find({
-            clockIn: { $gte: firstDay },
-            clockOut: { $lt: nextWeeksFirstDay },
-        });
-
-        const entriesGroupedByDate = getEntriesGroupedByDate(entries);
-        return Object.values(entriesGroupedByDate);
-    }
-
-    /**
-     * Get entries for Thursday-to-Wednesday cycle grouped by date
-     */
-    async getThursdayCycleEntries(): Promise<GroupedDateEntry[]> {
-        const now = new Date();
-        const { startDate, endDate } = getThursdayCycleRange(now);
+        const { startDate, endDate } = getCycleRange(new Date(), firstDayOfWeek, timeZone, false);
 
         const entries = await TimeEntry.find({
             clockIn: { $gte: startDate },
             clockOut: { $lt: endDate },
         });
 
-        const entriesGroupedByDate = getEntriesGroupedByDate(entries);
+        const entriesGroupedByDate = getEntriesGroupedByDate(entries, timeZone);
         return Object.values(entriesGroupedByDate);
+    }
+
+    /**
+     * Get secondary week cycle entries according to configured secondaryWeekStartDay and timezone
+     */
+    async getSecondaryWeekEntries(timeZoneOverride?: string): Promise<GroupedDateEntry[]> {
+        const settings = await settingsService.getSettings();
+        if (!settings.secondaryWeekEnabled) {
+            return [];
+        }
+
+        const timeZone = timeZoneOverride || settings.timeZone || 'UTC';
+        const startDay = settings.secondaryWeekStartDay ?? 1;
+
+        const { startDate, endDate } = getCycleRange(new Date(), startDay, timeZone, true);
+
+        const entries = await TimeEntry.find({
+            clockIn: { $gte: startDate },
+            clockOut: { $lt: endDate },
+        });
+
+        const entriesGroupedByDate = getEntriesGroupedByDate(entries, timeZone);
+        return Object.values(entriesGroupedByDate);
+    }
+
+    /**
+     * Alias for secondary week cycle entries (for backward compatibility)
+     */
+    async getThursdayCycleEntries(timeZoneOverride?: string): Promise<GroupedDateEntry[]> {
+        return this.getSecondaryWeekEntries(timeZoneOverride);
     }
 
     /**

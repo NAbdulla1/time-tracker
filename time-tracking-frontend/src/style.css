@@ -7,6 +7,17 @@
   color: rgba(255, 255, 255, 0.87);
   background-color: #242424;
 
+  --drawer-bg: #1c1c1f;
+  --drawer-footer-bg: rgba(0, 0, 0, 0.25);
+  --card-bg: #28282d;
+  --border-color: #38383f;
+  --input-bg: #18181b;
+  --input-border: #44444e;
+  --text-heading: #f8fafc;
+  --tz-text-color: #f1f5f9;
+  --nav-text-color: #cbd5e1;
+  --text-muted: #94a3b8;
+
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -25,10 +36,9 @@ a:hover {
 
 body {
   margin: 0;
-  display: flex;
-  place-items: center;
   min-width: 320px;
   min-height: 100vh;
+  display: block;
 }
 
 h1 {
@@ -62,9 +72,10 @@ button:focus-visible {
 }
 
 #app {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
+  width: 100%;
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
   text-align: center;
 }
 
@@ -72,6 +83,16 @@ button:focus-visible {
   :root {
     color: #213547;
     background-color: #ffffff;
+    --drawer-bg: #f4f4f6;
+    --drawer-footer-bg: #eaecef;
+    --card-bg: #ffffff;
+    --border-color: #e2e8f0;
+    --input-bg: #ffffff;
+    --input-border: #cbd5e1;
+    --text-heading: #0f172a;
+    --tz-text-color: #0f172a;
+    --nav-text-color: #334155;
+    --text-muted: #64748b;
   }
 
   a:hover {
@@ -85,14 +106,17 @@ button:focus-visible {
 
 .data-table {
   max-width: 600px;
-  border: 1px solid black;
+  margin: 0 auto;
+  border: 1px solid var(--border-color, black);
   border-collapse: collapse;
 }
 
 .data-table td,
 .data-table th {
-  padding-left: 5px;
-  padding-right: 5px;
+  padding-left: 8px;
+  padding-right: 8px;
+  padding-top: 4px;
+  padding-bottom: 4px;
   text-align: left;
-  border: 1px solid black;
+  border: 1px solid var(--border-color, black);
 }

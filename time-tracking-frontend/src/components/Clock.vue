@@ -23,7 +23,7 @@
             <td>{{ entry.clockIn && displayTime(entry.clockIn) }}</td>
             <td>{{ entry.clockOut && displayTime(entry.clockOut) }}</td>
             <td style="text-align: center;">
-              <span @click="onDeleteEntry(entry._id)" class="material-symbols-outlined icon-btn">
+              <span @click="onDeleteEntry(entry._id)" class="material-symbols-outlined icon-btn" title="Delete entry">
                 delete
               </span>
             </td>
@@ -36,7 +36,7 @@
 </template>
 
 <script>
-import { formatTime } from '../utils';
+import { formatTime, formatDisplayDateTime } from '../utils';
 import Week from './Week.vue';
 import { mapActions, mapState } from 'pinia';
 import { useStore } from '../store';
@@ -49,7 +49,7 @@ export default {
     };
   },
   computed: {
-    ...mapState(useStore, ['isClockedIn', 'todaysTotalTime', 'todaysEntries', 'lastClockInTime', 'thursdayClockEntries']),
+    ...mapState(useStore, ['isClockedIn', 'todaysTotalTime', 'todaysEntries', 'lastClockInTime', 'secondaryClockEntries', 'settings']),
     // Formatted elapsed time in HH:MM:SS
     formattedElapsedTime() {
       return formatTime(this.elapsedTime);
@@ -60,10 +60,9 @@ export default {
     },
   },
   methods: {
-    ...mapActions(useStore, ['clockIn', 'clockOut', 'getTodaysData', 'getClockStatus', 'getWeekDays', 'getThursdayWeekDays', 'deleteEntry']),
+    ...mapActions(useStore, ['clockIn', 'clockOut', 'getTodaysData', 'getClockStatus', 'getWeekDays', 'getSecondaryWeekDays', 'deleteEntry']),
     displayTime(dt) {
-      const dd = new Date(dt);
-      return `${dd.toDateString()} ${dd.toLocaleTimeString()}`;
+      return formatDisplayDateTime(dt, this.settings?.timeZone);
     },
     async onClockIn() {
       await this.clockIn();
@@ -73,8 +72,8 @@ export default {
       await this.clockOut();
       await this.getTodaysData();
       await this.getWeekDays();
-      if (this.thursdayClockEntries && this.thursdayClockEntries.length > 0) {
-        await this.getThursdayWeekDays();
+      if (this.secondaryClockEntries && this.secondaryClockEntries.length > 0) {
+        await this.getSecondaryWeekDays();
       }
       this.elapsedTime = 0; // Reset elapsed time
     },
@@ -88,13 +87,12 @@ export default {
       }, 1000); // Update every second
     },
     async onDeleteEntry(id) {
-      //TODO confirm before deleting
       await this.deleteEntry(id);
       await this.getClockStatus();
       await this.getTodaysData();
       await this.getWeekDays();
-      if (this.thursdayClockEntries && this.thursdayClockEntries.length > 0) {
-        await this.getThursdayWeekDays();
+      if (this.secondaryClockEntries && this.secondaryClockEntries.length > 0) {
+        await this.getSecondaryWeekDays();
       }
       if (!this.isClockedIn) {
         this.elapsedTime = 0;
