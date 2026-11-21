@@ -1,13 +1,11 @@
-import axios from "axios";
 import { defineStore } from "pinia";
-
-const apiBaseUrl = 'http://localhost:5050/api';
+import timeTrackingService from "../services/timeTrackingService";
 
 export const useStore = defineStore("main", {
     state: () => ({
         isClockedIn: false,
         lastClockInTime: null,
-        todaysTotalTime: [],
+        todaysTotalTime: 0,
         todaysEntries: [],
         weekClockEntries: [],
         thursdayClockEntries: [],
@@ -15,33 +13,33 @@ export const useStore = defineStore("main", {
     }),
     actions: {
         async clockIn() {
-            const { data } = await axios.post(`${apiBaseUrl}/clock-in`);
+            const data = await timeTrackingService.clockIn();
             this.isClockedIn = true;
             this.lastClockInTime = new Date(data.clockInTime);
         },
         async clockOut() {
-            await axios.post(`${apiBaseUrl}/clock-out`);
+            await timeTrackingService.clockOut();
             this.isClockedIn = false;
             this.lastClockInTime = null;
         },
         async getTodaysData() {
-            const { data } = await axios.get(`${apiBaseUrl}/today`);
+            const data = await timeTrackingService.getTodayData();
             this.todaysEntries = data.entries;
             this.todaysTotalTime = data.totalDuration;
         },
         async getClockStatus() {
-            const { data } = await axios.get(`${apiBaseUrl}/is-clocked-in`);
+            const data = await timeTrackingService.getClockStatus();
             this.isClockedIn = data.isClockedIn;
             this.lastClockInTime = data.isClockedIn ? new Date(data.clockInTime) : null;
         },
         async getWeekDays() {
-            const {data} = await axios.get(`${apiBaseUrl}/current-week`);
+            const data = await timeTrackingService.getWeekDays();
             this.weekClockEntries = data;
         },
         async getThursdayWeekDays() {
             this.isThursdayLoading = true;
             try {
-                const { data } = await axios.get(`${apiBaseUrl}/thursday-week`);
+                const data = await timeTrackingService.getThursdayWeekDays();
                 this.thursdayClockEntries = data;
                 return data;
             } finally {
@@ -49,7 +47,7 @@ export const useStore = defineStore("main", {
             }
         },
         async deleteEntry(entryId) {
-            await axios.delete(`${apiBaseUrl}/clock-entry/${entryId}`);
+            await timeTrackingService.deleteEntry(entryId);
         }
     }
 });

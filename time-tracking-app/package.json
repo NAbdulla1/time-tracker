@@ -1,10 +1,10 @@
 {
   "name": "time-tracking-app",
   "version": "1.0.0",
-  "main": "server.ts",
+  "main": "src/server.ts",
   "bin": "build/server.js",
   "scripts": {
-    "dev": "nodemon --exec ts-node server.ts",
+    "dev": "nodemon --exec ts-node src/server.ts",
     "build": "tsc",
     "make-exe": "pkg . --targets node*-win-x64 --output time-tracking-app.exe"
   },
